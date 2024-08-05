@@ -3,6 +3,7 @@ package com.example.server.schedule;
 import com.example.server.dao.NewsRepo;
 import com.example.server.model.News;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,7 +31,7 @@ public class NewsCollector {
 
     private final NewsRepo newsRepo;
 
-    @Scheduled(cron = "0 0/2 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     private void fetchNewsFromTheSite() {
         LOGGER.info("Method fetchNews begins");
         List<News> newsList = new ArrayList<>();
@@ -39,12 +40,20 @@ public class NewsCollector {
             newsRepo.deleteAllForCurrentDay(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX));
             Document document = Jsoup.connect(NEWS_WEBSITE_URL).get();
             Elements elements = document.getElementsByClass("article_news_list");
-            for (Element e : elements) {
-                String publicationTime = e.getElementsByClass("article_time").text();
+            for (Element element : elements) {
+                String publicationTime = element.getElementsByClass("article_time").text();
                 if (!publicationTime.isEmpty()) {
                     News news = new News();
-                    news.setHeadline(e.select("a").text());
-                    LOGGER.info(publicationTime);
+                    news.setHeadline(element.select("a").text());
+
+                    String newsLink = element.select("a").attr("href");
+                    if (newsLink.startsWith("https://")) {
+                        LOGGER.info(newsLink);
+                        fetchNewsDescription(newsLink, news);
+                    } else {
+                        String correctConnectionString = new StringBuilder(newsLink).insert(0, "https://www.pravda.com.ua").toString();
+                        fetchNewsDescription(correctConnectionString, news);
+                    }
                     news.setPublicationTime(LocalDateTime.of(LocalDate.now(),
                             LocalTime.parse(publicationTime)));
                     newsList.add(news);
@@ -57,5 +66,32 @@ public class NewsCollector {
         }
         LOGGER.info("Method fetchNews ends");
         newsRepo.saveAll(newsList);
+    }
+
+    private String buildDescription(Elements elements) {
+        String result;
+        StringBuilder sb = new StringBuilder();
+        for (Element element : elements) {
+            sb.append(element.text());
+        }
+        result = sb.toString();
+        sb.delete(0, sb.length());
+        return result;
+    }
+
+    private void fetchNewsDescription(String url, News news) {
+        try {
+            Document doc = Jsoup.connect(url).get();
+            Elements el = doc.getElementsByTag("p");
+            String descriptionText = buildDescription(el);
+            LOGGER.info("Length: " + descriptionText.length());
+            news.setDescription(descriptionText);
+        } catch (HttpStatusException e) {
+            news.setDescription("Error 403");
+        } catch (IllegalArgumentException e) {
+            LOGGER.info("IllegalArgumentException");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
