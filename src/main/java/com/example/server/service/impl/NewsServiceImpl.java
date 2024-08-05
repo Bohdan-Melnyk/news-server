@@ -66,6 +66,11 @@ public class NewsServiceImpl implements NewsService {
         newsRepo.deleteById(id);
     }
 
+    /**
+     * Retrieves a list of all news entries for the current day.
+     *
+     * @return a list of news entries published on the current day
+     */
     @Override
     public List<News> getAllForCurrentDay() {
         return newsRepo.fetchAllForCurrentDay(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX));

@@ -21,9 +21,4 @@ public class NewsController {
         return ResponseEntity.ok().body(currentDayNewsList.toArray(new News[currentDayNewsList.size()]));
     }
 
-    @GetMapping("/news-test")
-    public News[] fetchNewsTest() {
-        var currentDayNewsList = newsService.getAllForCurrentDay();
-        return currentDayNewsList.toArray(new News[currentDayNewsList.size()]);
-    }
 }

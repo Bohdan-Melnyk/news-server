@@ -37,5 +37,10 @@ public interface NewsService {
      */
     void deleteNews(Long id);
 
+    /**
+     * Retrieves a list of all news entries for the current day.
+     *
+     * @return a list of news entries published on the current day
+     */
     List<News> getAllForCurrentDay();
 }

@@ -89,7 +89,7 @@ public class NewsCollector {
         } catch (HttpStatusException e) {
             news.setDescription("Error 403");
         } catch (IllegalArgumentException e) {
-            LOGGER.info("IllegalArgumentException");
+            news.setDescription("Error 404");
         } catch (IOException e) {
             e.printStackTrace();
         }
