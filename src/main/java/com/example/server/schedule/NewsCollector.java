@@ -31,7 +31,7 @@ public class NewsCollector {
 
     private final NewsRepo newsRepo;
 
-    @Scheduled(cron = "0 0/20 * * * ?")
+    @Scheduled(cron = "0 0/2 * * * ?")
     private void fetchNewsFromTheSite() {
         LOGGER.info("Method fetchNews begins");
         List<News> newsList = new ArrayList<>();
@@ -84,7 +84,6 @@ public class NewsCollector {
             Document doc = Jsoup.connect(url).get();
             Elements el = doc.getElementsByTag("p");
             String descriptionText = buildDescription(el);
-            LOGGER.info("Length: " + descriptionText.length());
             news.setDescription(descriptionText);
         } catch (HttpStatusException e) {
             news.setDescription("Error 403");
