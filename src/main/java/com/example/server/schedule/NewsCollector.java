@@ -31,7 +31,7 @@ public class NewsCollector {
 
     private final NewsRepo newsRepo;
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/20 * * * ?")
     private void fetchNewsFromTheSite() {
         LOGGER.info("Method fetchNews begins");
         List<News> newsList = new ArrayList<>();
